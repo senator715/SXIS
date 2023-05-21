@@ -14,5 +14,6 @@
   },
   "scripts": {
     "sxis": "npm update & node src/main.js"
+    "test": "npm update & node src/main.js"
   }
 }
