@@ -18,6 +18,9 @@ else
 if(!sh.fs.existsSync(sh.config.get("api.data_folder")))
   sh.fs.mkdirSync(sh.config.get("api.data_folder"));
 
+if(sh.is_ci)
+  return;
+
 sh.net.createServer(function(req, res){
   if(req.method === "POST"){
     sh.print(req, "POST");

@@ -27,3 +27,4 @@ To enable verbose debugging text, Follow the information displayed in the termin
 3. https://www.npmjs.com/package/mime-types
 4. https://www.npmjs.com/package/snappyjs
 5. https://www.npmjs.com/package/config
+6. https://www.npmjs.com/package/is-ci

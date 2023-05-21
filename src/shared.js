@@ -5,6 +5,7 @@ exports.crypto    = require("crypto");
 exports.mime      = require("mime-types");
 exports.aesjs     = require("aes-js");
 exports.snappyjs  = require("snappyjs");
+exports.is_ci     = require('is-ci');
 exports.debug     = require("debug")("SXIS/");
 exports.pkg       = require("../package.json");
 exports.sf        = require("./securefile.js");
