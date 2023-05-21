@@ -6,7 +6,7 @@ exports.mime      = require("mime-types");
 exports.aesjs     = require("aes-js");
 exports.snappyjs  = require("snappyjs");
 exports.debug     = require("debug")("SXIS/");
-exports.pkg       = require("./package.json");
+exports.pkg       = require("../package.json");
 exports.sf        = require("./securefile.js");
 
 // Find extension for content type

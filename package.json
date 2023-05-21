@@ -2,14 +2,17 @@
   "name": "SXIS",
   "version": "1.0.0",
   "description": "ShareX Image Server",
-  "main": "main.js",
+  "main": "src/main.js",
   "author": "senator",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "aes-js": "^3.1.2",
     "config": "^3.3.9",
     "debug": "^4.3.4",
     "mime-types": "^2.1.35",
     "snappyjs": "^0.7.0"
+  },
+  "scripts": {
+    "sxis": "npm update & node src/main.js"
   }
 }
