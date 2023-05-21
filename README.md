@@ -1,5 +1,6 @@
 ![Logo](https://github.com/senator715/SXIS/assets/89423559/bc819c80-d0e8-4ce0-bf89-f1461432abc4)
-[![CodeQL](https://github.com/senator715/SXIS/actions/workflows/codeql.yml/badge.svg)](https://github.com/senator715/SXIS/actions/workflows/codeql.yml)
+[![Node.js CI](https://github.com/senator715/SXIS/actions/workflows/node.js.yml/badge.svg)](https://github.com/senator715/SXIS/actions/workflows/node.js.yml)
+[![CodeQL](https://github.com/senator715/SXIS/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/senator715/SXIS/actions/workflows/github-code-scanning/codeql)
 #
 SXIS provides a comprehensive solution written in JavaScript using NodeJS that eliminates the need for third-party ShareX providers. With SXIS, you can set up your server to share images, videos, and files securely and privately.
 # Why SXIS?
