@@ -1,4 +1,4 @@
-![Logo](https://github.com/senator715/SXIS/assets/89423559/668c9381-23ee-4d22-81be-71d4b74920d4)
+![Logo](https://github.com/senator715/SXIS/assets/89423559/bc819c80-d0e8-4ce0-bf89-f1461432abc4)
 #
 SXIS provides a comprehensive solution written in JavaScript using NodeJS that eliminates the need for third-party ShareX providers. With SXIS, you can set up your server to share images, videos, and files securely and privately.
 # Why SXIS?
