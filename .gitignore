@@ -132,5 +132,4 @@ dist
 data/
 compile.bat
 run.bat
-package-lock.json
 config/development.json

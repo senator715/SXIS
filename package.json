@@ -13,7 +13,7 @@
     "snappyjs": "^0.7.0"
   },
   "scripts": {
-    "sxis": "npm update & node src/main.js"
+    "sxis": "npm update & node src/main.js",
     "test": "npm update & node src/main.js"
   }
 }
