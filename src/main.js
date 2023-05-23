@@ -8,12 +8,7 @@ console.log(`  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, A
 console.log(`  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS`);
 console.log(`  IN THE SOFTWARE.\n`);
 
-if(process.env.DEBUG == undefined){
-  console.log(`  [SXIS] v${sh.version()} written by senator`);
-  console.log(`  [SXIS] NOTE: Debug text disabled, enable by passing "set DEBUG=*"`);
-}
-else
-  sh.debug(`v${sh.version()} written by senator`);
+sh.debug(`v${sh.version()} written by senator`);
 
 if(!sh.fs.existsSync(sh.config.get("api.data_folder")))
   sh.fs.mkdirSync(sh.config.get("api.data_folder"));
@@ -44,7 +39,7 @@ sh.net.createServer(function(req, res){
 
     // Make the extension exploit safe and check if its on the whitelist (If thats enabled)
     var ext = match[0].toLowerCase().replace(/[^a-zA-Z0-9.]+/g, "");
-    if(!sh.is_extension_whitelisted(ext)){
+    if(!sh.is_extension_whitelisted_to_upload(ext)){
       sh.respond(req, res, "Error - \"" + ext + "\" is not a whitelisted extension", 403);
       return;
     }
@@ -77,19 +72,24 @@ sh.net.createServer(function(req, res){
         return;
       }
 
+      // Take all pieces of the buffer and push them into one large buffer
       const binary = Buffer.concat(buffer);
       sh.print(req, `Received buffer {len: "${sh.format_len(binary.length)}"}`);
 
-      var file_name = sh.sf.handle_store_file(binary, ext);
+      // Now delete the buffer
       delete buffer;
 
-      if(file_name == undefined){
+      // Attempt to store the file
+      var file = sh.sf.handle_store_file(binary, ext);
+
+      if(file == undefined){
         sh.respond(req, res, `Error - Error while storing file`, 413);
         return;
       }
 
+      sh.print(req, `Received stream {file: "${file.name}", len: "${sh.format_len(file.size)}", type: "${ext}"}`);
       res.writeHead(200, {"Content-Type": "text/plain"});
-      res.end(sh.config.get("listen.url") + file_name);
+      res.end(sh.config.get("listen.url") + file.name_with_key);
     });
   }
   else if(req.url.length > 1){
@@ -177,12 +177,7 @@ sh.net.createServer(function(req, res){
 
 // Let the user know the service is ready
 {
-  if(process.env.DEBUG == undefined)
-    console.log(`  [SXIS] Ready {listening: "${sh.config.get("listen.host")}:${sh.config.get("listen.port")}", site: "${sh.config.get("listen.url")}"}`);
-  else
-    sh.debug(`Ready {listening: "${sh.config.get("listen.host")}:${sh.config.get("listen.port")}", site: "${sh.config.get("listen.url")}"}`);
-
-  console.log("");
+  sh.debug(`Ready {listening: "${sh.config.get("listen.host")}:${sh.config.get("listen.port")}", site: "${sh.config.get("listen.url")}"}`);
 }
 
 // Create our auto clean up thread

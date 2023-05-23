@@ -1,3 +1,9 @@
+// HACK:
+// We must set this because the "config" plugin should have just made us do require("config")("test.json")
+// Instead of messing with NODE_ENV (stupid af)
+process.env.NODE_ENV  = "production";
+process.env.DEBUG     = "*";
+
 exports.net       = require("http");
 exports.fs        = require("fs");
 exports.config    = require("config");
@@ -11,11 +17,24 @@ exports.pkg       = require("../package.json");
 exports.sf        = require("./securefile.js");
 
 // Find extension for content type
-exports.is_extension_whitelisted = function(ext){
-  if(!exports.config.get("whitelist.enabled"))
+exports.is_extension_whitelisted_to_upload = function(ext){
+  if(!exports.config.get("upload_whitelist.enabled"))
     return true;
 
-  var whitelist = exports.config.get("whitelist.extensions");
+  var whitelist = exports.config.get("upload_whitelist.extensions");
+  for(var i = 0; i < whitelist.length; i++)
+    if(ext === whitelist[i])
+      return true;
+
+  return false;
+}
+
+// Find extension for content type
+exports.is_extension_whitelisted_to_encrypt = function(ext){
+  if(!exports.config.get("aes.encrypt_whitelist.enabled"))
+    return true;
+
+  var whitelist = exports.config.get("aes.encrypt_whitelist.extensions");
   for(var i = 0; i < whitelist.length; i++)
     if(ext === whitelist[i])
       return true;
@@ -29,7 +48,7 @@ exports.version = function(){
 
 // Return version name
 exports.name = function(){
-  return `SXIS ${exports.version()}`;
+  return `SXIS ${exports.version()} `;
 }
 
 exports.last_ip = undefined;

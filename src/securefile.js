@@ -1,11 +1,11 @@
-const debug_enc = require("debug")("SXIS/encode_handler");
-const debug_dec = require("debug")("SXIS/decode_handler");
+const debug_enc = require("debug")("SXIS/E");
+const debug_dec = require("debug")("SXIS/D");
 const sh        = require("./shared.js");
 
 // Creates a id and key pair for a buffer
 exports.create_pair = function(buffer){
   var hash = sh.crypto.createHash("sha256").update(buffer).digest("hex");
-  var bit  = sh.config.get("file.aes_bit") / 8;
+  var bit  = sh.config.get("aes.bit") / 8;
   return {
     id:   hash.substring(0,bit).toLowerCase(),
     key:  hash.substring(bit,bit*2).toLowerCase(),
@@ -15,7 +15,7 @@ exports.create_pair = function(buffer){
 
 // Splits id and key from file hash input
 exports.create_pair_from_file_hash = function(hash){
-  var bit  = sh.config.get("file.aes_bit") / 8;
+  var bit  = sh.config.get("aes.bit") / 8;
   if(hash == undefined || hash.length != (bit*2))
     return undefined;
 
@@ -38,16 +38,37 @@ exports.bytes_to_buffer = function(bytes){
   return Buffer.from(bytes);
 }
 
-// Handles the encoding of a file before its stored
-// For instance: Compression / AES
-exports.encode_handler = function(buffer, key, ext){
-  if(!sh.config.get("file.aes") && !sh.config.get("file.compress"))
-    return buffer;
-
+exports.can_encode_or_decode = function(ext){
   // !IMPORTANT!
   // Currently SXIS Does't support encryption on stream files
   // Such as MP3 Audio and MP4 Video/Audio
   if(ext == ".mp3" || ext == ".mp4")
+    return false;
+
+  return true;
+}
+
+exports.can_compress_buffer = function(ext){
+  if(!sh.config.get("compress"))
+    return false;
+
+  return true;
+}
+
+exports.can_encrypt_buffer = function(ext){
+  if(!sh.config.get("aes.enabled"))
+    return false;
+
+  return sh.is_extension_whitelisted_to_encrypt(ext);
+}
+
+// Handles the encoding of a file before its stored
+// For instance: Compression / AES
+exports.encode_handler = function(buffer, key, ext){
+  if(!sh.config.get("aes.enabled") && !sh.config.get("compress"))
+    return buffer;
+
+  if(!exports.can_encode_or_decode(ext))
     return buffer;
 
   // 1. Create key array
@@ -57,7 +78,7 @@ exports.encode_handler = function(buffer, key, ext){
   var bytes   = exports.buffer_to_bytes(buffer);
 
   // 3. Compress byte array (lossless)
-  if(sh.config.get("file.compress")){
+  if(exports.can_compress_buffer(ext)){
     debug_enc(`Compressing...`);
 
     bytes = sh.snappyjs.compress(bytes);
@@ -65,10 +86,10 @@ exports.encode_handler = function(buffer, key, ext){
   }
 
   // If we aren't using AES, return here
-  if(!sh.config.get("file.aes"))
+  if(!exports.can_encrypt_buffer(ext))
     return exports.bytes_to_buffer(bytes);
 
-  debug_enc(`Encrypting with AES ${sh.config.get("file.aes_bit")}bit`);
+  debug_enc(`Encrypting with AES ${sh.config.get("aes.bit")}bit`);
 
   // 4. Encrypt bytes
   // 5. Convert bytes to buffer
@@ -76,7 +97,7 @@ exports.encode_handler = function(buffer, key, ext){
   var enc     = ctr.encrypt(bytes);
       enc     = exports.bytes_to_buffer(enc);
 
-  debug_enc(`AES ${sh.config.get("file.aes_bit")}bit OK`);
+  debug_enc(`AES ${sh.config.get("aes.bit")}bit OK`);
 
   return enc;
 }
@@ -84,13 +105,10 @@ exports.encode_handler = function(buffer, key, ext){
 // Handles the decoding of a file before its fetched
 // For instance: Compression / AES
 exports.decode_handler = function(buffer, key, ext){
-  if(!sh.config.get("file.aes") && !sh.config.get("file.compress"))
+  if(!sh.config.get("aes.enabled") && !sh.config.get("compress"))
     return buffer;
 
-  // !IMPORTANT!
-  // Currently SXIS Does't support encryption or compression on stream files
-  // Such as MP3 Audio and MP4 Video/Audio
-  if(ext == ".mp3" || ext == ".mp4")
+  if(!exports.can_encode_or_decode(ext))
     return buffer;
 
   // 1. Create key array
@@ -99,15 +117,15 @@ exports.decode_handler = function(buffer, key, ext){
   var bytes   = exports.buffer_to_bytes(buffer);
 
   // 3. Decrypt byte array
-  if(sh.config.get("file.aes")){
-    debug_enc(`Decrypting AES ${sh.config.get("file.aes_bit")}bit`);
+  if(exports.can_encrypt_buffer(ext)){
+    debug_enc(`Decrypting AES ${sh.config.get("aes.bit")}bit`);
     var ctr = new sh.aesjs.ModeOfOperation.ctr(aes_key, undefined);
     bytes   = ctr.decrypt(bytes);
     debug_enc(`Decryption OK`);
   }
 
   // 4. Uncompress byte array (lossless)
-  if(sh.config.get("file.compress")){
+  if(exports.can_compress_buffer(ext)){
     debug_dec(`Decompressing file...`);
     bytes = sh.snappyjs.uncompress(bytes);
     debug_dec(`Decompression OK`);
@@ -124,14 +142,24 @@ exports.handle_store_file = function(buffer, ext){
     return undefined;
 
   var pair      = exports.create_pair(buffer);
-  var enc       = exports.encode_handler(buffer, pair.key, ext);
   var wish_path = sh.config.get("api.data_folder") + pair.id + ext;
+  var file_size = buffer.length;
 
-  if(!sh.fs.existsSync(wish_path))
-    sh.fs.writeFileSync(wish_path, enc);
+  // Only run encode handler and write file if it doesnt exist
+  // Else just act like its been done...
+  if(!sh.fs.existsSync(wish_path)){
+    buffer    = exports.encode_handler(buffer, pair.key, ext);
+    file_size = buffer.length;
 
-  delete enc;
-  return pair.full + ext;
+    sh.fs.writeFileSync(wish_path, buffer);
+    delete buffer;
+  }
+
+  return {
+    name:           pair.id + ext,
+    name_with_key:  pair.full + ext,
+    size:           file_size
+  };
 }
 
 exports.handle_read_file = function(file_name, file_hash, ext){

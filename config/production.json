@@ -1,0 +1,90 @@
+{
+  /*
+    To properly set up SXIS on a server,
+    Adjust the service listening settings by assigning the server's IPv4 address to the "host" variable.
+    If you intend to use Cloudflare, use port 80. Customize the "URL" to your domain,
+    As it will be provided to the client when generating an image link.
+  */
+  "listen": {
+    "host":     "127.0.0.1",
+    "port":     80,
+    "url":      "http://localhost/",
+  },
+
+  /*
+    To create custom uploader settings for ShareX, follow these steps:
+      1. Create a new uploader and give it your chosen name.
+      2. Set the request URL to your server's IP address, such as "http://localhost:80".
+      3. Choose "Binary" as the Body type.
+      4. In the headers section, add a "key" header and use the provided key.
+      5. Additionally, add a title with the term "file" and set the value to "{filename}."
+  */
+  "api": {
+    "key":                    "123",
+    "data_folder":            "data/",
+    "max_upload_size_bytes":  1073741824/*1GB*/,
+  },
+
+  /*
+    Enabling this feature will safeguard your uploaded files on the server from theft.
+    Even if the server is hacked, hackers will be unable to steal your files.
+  */
+  "aes": {
+    "enabled": true,
+    "bit":     128, // This value must be 128, 196 or 256.
+
+    /*
+      To ensure that only specific file types are protected for optimal performance,
+      You can utilize the encryption whitelist. For instance,
+      Sensitive information may be stored in txt and zip files that you don't want to be compromised
+      In the event of a server breach. On the other hand, png/jpeg files may not be as crucial
+      And speed is prioritized for those formats.
+    */
+    "encrypt_whitelist": {
+      "enabled":    false,
+      "extensions": [
+        ".txt",
+        ".zip",
+        ".7z",
+        ".rar",
+      ],
+    }
+  },
+
+  // The compress mode utilizes SnappyJS, a lossless compression method.
+  "compress": true,
+
+  /*
+    The Cleanup feature will get rid of any files that have been around
+    for longer than the set time limit, known as max_file_life_seconds.
+  */
+  "cleanup": {
+    "enabled":                false,
+    "check_time_seconds":     60,
+    "max_file_life_seconds":  604800/*7 Days*/
+  },
+
+  /*
+    The upload whitelist will control what people can upload; if you wish to add an extension,
+    You must add a dot before the extension; use the example extensions below as a reference.
+  */
+  "upload_whitelist": {
+    "enabled":    false,
+    "extensions": [
+      ".txt",
+      ".png",
+      ".jpg",
+      ".gif",
+      ".zip",
+      ".7z",
+      ".exe",
+      ".js",
+      ".sh",
+      ".json",
+      ".txt",
+      ".mp4",
+      ".wav",
+      ".mp3"
+    ]
+  }
+}
