@@ -189,10 +189,8 @@ sh.net.createServer(function(req, res){
     }
   }
   else{
-    req.connection.destroy();
-    return;
-    //res.writeHead(200, {"Content-Type": "text/plain"});
-    //res.end(sh.name());
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    res.end(sh.name());
   }
 
 }).listen(sh.config.get("listen.port"), sh.config.get("listen.host"));
