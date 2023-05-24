@@ -66,7 +66,7 @@ exports.respond = function(socket, res, msg, error_code = 200, content_type = "t
   res.writeHead(error_code, {"Content-Type": content_type});
   res.end(`${exports.name()}\n\n${msg}`);
 
-  exports.print(socket, `RESPOND: "${msg}"`);
+  exports.print(socket, `RESPOND: {msg: "${msg}", code: ${error_code}}`);
 }
 
 exports.format_len = function(bytes, decimals = 2) {
