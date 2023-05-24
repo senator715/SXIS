@@ -79,11 +79,21 @@ sh.net.createServer(function(req, res){
       // Now delete the buffer
       delete buffer;
 
-      // Attempt to store the file
-      var file = sh.sf.handle_store_file(binary, ext);
+      // Attempt to store the file using try catch
+      // (Because 3rd party libraries will throw errors on failure)
+      var file = undefined;
+      {
+        try{
+          file =  sh.sf.handle_store_file(binary, ext);
+        } catch(e){
+          sh.print(req, `Error while storing file {${e}}`);
+          sh.respond(req, res, `Error - Error while storing file (1)`, 413);
+          return;
+        }
+      }
 
       if(file == undefined){
-        sh.respond(req, res, `Error - Error while storing file`, 413);
+        sh.respond(req, res, `Error - Error while storing file (2)`, 413);
         return;
       }
 
@@ -109,7 +119,19 @@ sh.net.createServer(function(req, res){
 
     // This is the correct input
     var wish_file_path  = sh.config.get("api.data_folder") + file_name + `.${ext}`;
-    var data            = sh.sf.handle_read_file(wish_file_path, file_name, ext);
+
+    // Attempt to fetch the file using try catch
+    // (Because 3rd party libraries will throw errors on failure)
+    var data = undefined;
+    {
+      try{
+        data = sh.sf.handle_read_file(wish_file_path, file_name, ext);
+      } catch(e){
+        sh.print(req, `Error while fetching file {${e}}`);
+        sh.respond(req, res, `Not Found`, 404);
+        return;
+      }
+    }
 
     if(data == undefined || !sh.fs.existsSync(data.file_name)){
       sh.respond(req, res, `Not Found`, 404);
